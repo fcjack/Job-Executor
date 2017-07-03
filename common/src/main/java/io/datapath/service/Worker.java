@@ -12,5 +12,5 @@ public interface Worker {
 
     JobType getType();
 
-    FutureTask buildFutureTask(Task task);
+    Runnable buildThread(Task task);
 }

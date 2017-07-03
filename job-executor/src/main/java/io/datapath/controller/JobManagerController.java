@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 /**
  * Created by jackson on 02/07/17.
  */
@@ -28,5 +30,10 @@ public class JobManagerController {
         } else {
             throw new IllegalArgumentException("Pool size has to be more the 0");
         }
+    }
+
+    @RequestMapping(value = "status", method = RequestMethod.GET)
+    public Map<String, Object> threadPoolStatus() {
+        return jobService.getStatus();
     }
 }

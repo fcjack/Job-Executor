@@ -6,8 +6,6 @@ import io.datapath.service.Worker;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.FutureTask;
-
 /**
  * Created by jackson on 02/07/17.
  */
@@ -22,16 +20,16 @@ public class WaitForTwentySecondsWorker implements Worker {
     }
 
     @Override
-    public FutureTask buildFutureTask(Task task) {
-        return new FutureTask<>(() -> {
+    public Runnable buildThread(Task task) {
+        return () -> {
             try {
                 logger.info("Starting task to wait 20 seconds");
-                wait(20000L);
+                Thread.sleep(20_000);
                 logger.info("Completed task to wait 20 seconds");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }, null);
+        };
     }
 
 }

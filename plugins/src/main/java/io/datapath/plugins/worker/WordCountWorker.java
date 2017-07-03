@@ -3,9 +3,10 @@ package io.datapath.plugins.worker;
 import io.datapath.entities.Task;
 import io.datapath.entities.parameters.WordCountParameters;
 import io.datapath.enums.JobType;
-import io.datapath.plugins.config.ApplicationProperties;
+import io.datapath.plugins.util.SparkComponent;
 import io.datapath.service.Worker;
-import org.apache.spark.SparkConf;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -16,8 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import scala.Tuple2;
 
+import java.io.File;
 import java.util.Arrays;
-import java.util.concurrent.FutureTask;
 
 /**
  * Created by jackson on 03/07/17.
@@ -25,42 +26,45 @@ import java.util.concurrent.FutureTask;
 @Component
 public class WordCountWorker implements Worker {
 
-    private final ApplicationProperties applicationProperties;
+    private SparkComponent sparkComponent;
 
     @Autowired
-    public WordCountWorker(ApplicationProperties applicationProperties) {
-        this.applicationProperties = applicationProperties;
+    public WordCountWorker(SparkComponent sparkComponent) {
+        this.sparkComponent = sparkComponent;
     }
 
     public JobType getType() {
         return JobType.WORD_COUNT;
     }
 
-    public FutureTask buildFutureTask(Task task) {
-        return new FutureTask<>(() -> {
+    @Override
+    public Runnable buildThread(Task task) {
+        return () -> {
+            Logger logger = Logger.getLogger(getClass());
             String inputFilePath = task.getParameters().get(WordCountParameters.INPUT_FILE).toString();
             String outputFilePath = task.getParameters().get(WordCountParameters.OUTPUT_FILE).toString();
-            String sparkHost = applicationProperties.getSparkHost();
-            Integer sparkPort = applicationProperties.getSparkPort();
 
+            try {
+                JavaSparkContext sparkContext = sparkComponent.getSparkContext();
+                // Load our input data.
+                JavaRDD<String> input = sparkContext.textFile(inputFilePath);
 
-            SparkConf conf = new SparkConf();
-            conf.setAppName("wordCount");
-            conf.setMaster(String.format("spark://%s:%d", sparkHost, sparkPort));
+                // Split up into words.
+                JavaRDD<String> words = input.flatMap((FlatMapFunction<String, String>) s -> Arrays.asList(s.split(" ")).iterator());
 
-            JavaSparkContext sc = new JavaSparkContext(conf);
-            // Load our input data.
-            JavaRDD<String> input = sc.textFile(inputFilePath);
+                // Transform into word and count.
+                JavaPairRDD<String, Integer> counts = words.mapToPair((PairFunction<String, String, Integer>) x -> new Tuple2<>(x, 1)).reduceByKey((Function2<Integer, Integer, Integer>) (x, y) -> x + y);
 
-            // Split up into words.
-            JavaRDD<String> words = input.flatMap((FlatMapFunction<String, String>) s -> Arrays.asList(s.split(" ")).iterator());
-
-            // Transform into word and count.
-            JavaPairRDD<String, Integer> counts = words.mapToPair((PairFunction<String, String, Integer>) x -> new Tuple2<>(x, 1)).reduceByKey((Function2<Integer, Integer, Integer>) (x, y) -> x + y);
-
-            // Save the word count back out to a text file, causing evaluation.
-            counts.saveAsTextFile(outputFilePath);
-
-        }, null);
+                // Save the word count back out to a text file, causing evaluation.
+                File outputDirectory = new File(outputFilePath);
+                if (outputDirectory.exists()) {
+                    FileUtils.cleanDirectory(outputDirectory);
+                    outputDirectory.delete();
+                }
+                counts.saveAsTextFile(outputFilePath);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        };
     }
 }

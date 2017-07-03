@@ -1,6 +1,5 @@
 package io.datapath.enums;
 
-import io.datapath.entities.parameters.CalulatePiParameters;
 import io.datapath.entities.parameters.TaskParameters;
 import io.datapath.entities.parameters.WordCountParameters;
 
@@ -10,7 +9,7 @@ import io.datapath.entities.parameters.WordCountParameters;
 public enum JobType {
 
     FAILURE(null, false),
-    CALCULATE_PI(new CalulatePiParameters(), true),
+    CALCULATE_PI(null, false),
     WAIT_FOR_20_SECONDS(null, false),
     WORD_COUNT(new WordCountParameters(), true);
 

@@ -7,6 +7,4 @@ public class WordCountParameters extends TaskParameters {
 
     public static final String INPUT_FILE = "inputFilePath";
     public static final String OUTPUT_FILE = "outputFilePath";
-    public static final String SPARK_HOST = "sparkHost";
-    public static final String SPARK_PORT = "sparkPort";
 }
