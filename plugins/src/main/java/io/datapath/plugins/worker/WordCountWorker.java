@@ -6,7 +6,6 @@ import io.datapath.enums.JobType;
 import io.datapath.plugins.util.SparkComponent;
 import io.datapath.service.Worker;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -40,7 +39,6 @@ public class WordCountWorker implements Worker {
     @Override
     public Runnable buildThread(Task task) {
         return () -> {
-            Logger logger = Logger.getLogger(getClass());
             String inputFilePath = task.getParameters().get(WordCountParameters.INPUT_FILE).toString();
             String outputFilePath = task.getParameters().get(WordCountParameters.OUTPUT_FILE).toString();
 
