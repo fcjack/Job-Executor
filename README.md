@@ -70,10 +70,9 @@ a message telling that the field is required.
 
 ## Next steps
 
-As improvements with the project we need to store the results of the tasks inside 
-a repository or database.
-At the moment tasks to calculate values will be displayed on log, but not stored.
-Implements more Workers for project.
-Create metrics to monitoring the status of the application.
-Cancel one task on Queue.
+* As improvements with the project we need to store the results of the tasks inside 
+a repository or database. At the moment tasks to calculate values will be displayed on log, but not stored.
+* Implements more Workers for project.
+* Create metrics to monitoring the status of the application.
+* Cancel one task on Queue.
 
