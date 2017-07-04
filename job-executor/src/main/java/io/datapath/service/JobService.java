@@ -15,4 +15,6 @@ public interface JobService {
 
     Map<String,Object> getStatus();
 
+    Long getQueueSize();
+
 }

@@ -65,6 +65,11 @@ public class JobServiceImpl implements JobService {
         return statusMap;
     }
 
+    @Override
+    public Long getQueueSize() {
+        return (long) tasksQueue.size();
+    }
+
     @Scheduled(fixedRate = 1000)
     private void executeTasks() {
         while (!tasksQueue.isEmpty()) {
@@ -73,4 +78,5 @@ public class JobServiceImpl implements JobService {
             executorService.execute(worker.buildThread(task));
         }
     }
+
 }
