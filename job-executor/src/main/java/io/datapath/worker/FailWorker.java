@@ -19,10 +19,9 @@ public class FailWorker implements Worker {
     @Override
     public Runnable buildThread(Task task) {
         return () -> {
-            int a = 4, b = 0;
-            System.out.println("a and b=" + a + ":" + b);
-            System.out.println("a/b:" + (a / b));
-            System.out.println("Thread Name in Runnable after divide by zero:" + Thread.currentThread().getName());
+            int x = 4;
+            int zero = 0;
+            System.out.println(x / zero);
         };
     }
 
