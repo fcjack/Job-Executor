@@ -23,24 +23,23 @@ import java.util.Arrays;
  * Created by jackson on 03/07/17.
  */
 @Component
-public class WordCountWorker implements Worker {
+public class SparkWordCountWorker implements Worker {
 
     private SparkComponent sparkComponent;
 
     @Autowired
-    public WordCountWorker(SparkComponent sparkComponent) {
+    public SparkWordCountWorker(SparkComponent sparkComponent) {
         this.sparkComponent = sparkComponent;
     }
 
     public JobType getType() {
-        return JobType.WORD_COUNT;
+        return JobType.SPARK_WORD_COUNTER;
     }
 
     @Override
     public Runnable buildThread(Task task) {
         return () -> {
             String inputFilePath = task.getParameters().get(WordCountParameters.INPUT_FILE).toString();
-            String outputFilePath = task.getParameters().get(WordCountParameters.OUTPUT_FILE).toString();
 
             try {
                 JavaSparkContext sparkContext = sparkComponent.getSparkContext();
@@ -48,18 +47,20 @@ public class WordCountWorker implements Worker {
                 JavaRDD<String> input = sparkContext.textFile(inputFilePath);
 
                 // Split up into words.
-                JavaRDD<String> words = input.flatMap((FlatMapFunction<String, String>) s -> Arrays.asList(s.split(" ")).iterator());
+                JavaRDD<String> words = input.flatMap((FlatMapFunction<String, String>) s -> Arrays.asList(s.split("([\\W\\s]+)")).iterator());
 
                 // Transform into word and count.
                 JavaPairRDD<String, Integer> counts = words.mapToPair((PairFunction<String, String, Integer>) x -> new Tuple2<>(x, 1)).reduceByKey((Function2<Integer, Integer, Integer>) (x, y) -> x + y);
 
                 // Save the word count back out to a text file, causing evaluation.
-                File outputDirectory = new File(outputFilePath);
+                File inputFile = new File(inputFilePath);
+                String fileName = inputFile.getName().substring(0, inputFile.getName().indexOf("."));
+                File outputDirectory = new File(inputFile.getParent().concat(File.separator).concat(String.format("result_%s", fileName)));
                 if (outputDirectory.exists()) {
                     FileUtils.cleanDirectory(outputDirectory);
                     outputDirectory.delete();
                 }
-                counts.saveAsTextFile(outputFilePath);
+                counts.saveAsTextFile(outputDirectory.getPath());
             } catch (Exception e) {
                 e.printStackTrace();
             }

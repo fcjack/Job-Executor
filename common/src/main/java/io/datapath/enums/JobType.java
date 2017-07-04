@@ -11,7 +11,8 @@ public enum JobType {
     FAILURE(null, false),
     CALCULATE_PI(null, false),
     WAIT_FOR_20_SECONDS(null, false),
-    WORD_COUNT(new WordCountParameters(), true);
+    WORD_COUNTER(new WordCountParameters(), true),
+    SPARK_WORD_COUNTER(new WordCountParameters(), true);
 
     TaskParameters parameters;
     Boolean hasParameters;
@@ -23,10 +24,6 @@ public enum JobType {
 
     public TaskParameters getParameters() {
         return parameters;
-    }
-
-    public void setParameters(TaskParameters parameters) {
-        this.parameters = parameters;
     }
 
     public Boolean hasParameters() {
